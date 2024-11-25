@@ -72,7 +72,9 @@ $c->classes()
     ]);
 
 // start building the classes for the primary variant
-$c->variant('primary')
+$p = $c->variant('primary');
+
+$p->classes()
     ->light([
         'bg-indigo-600',
     ])->hoverLight([
@@ -85,7 +87,9 @@ $c->variant('primary')
     ]);
 
 // start building the classes for the secondary variant
-$c->variant('secondary')
+$s = $c->variant('secondary');
+
+$s->classes()
     ->light([
         'bg-gray-200',
     ])->hoverLight([
@@ -124,9 +128,3 @@ $c->setVariant($variant);
     A link button
 </x-button>
 ```
-
-# Links
-
--   https://github.com/laravel/framework/blob/11.x/src/Illuminate/View/ComponentAttributeBag.php
--   https://github.com/laravel/framework/blob/11.x/src/Illuminate/View/Compilers/Concerns/CompilesComponents.php#L163
--   https://github.com/gehrisandro/tailwind-merge-php
