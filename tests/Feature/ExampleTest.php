@@ -333,6 +333,7 @@ test('it has aria attributes support', function () {
     $t->setVariant('primary');
 
     expect($t->getAttributes())->toBe('aria-label="test-label" aria-hidden="true" aria-label="test-label"');
+    expect((string) $t)->toBe('aria-label="test-label" aria-hidden="true" aria-label="test-label"');
 });
 
 // you can set onclick attributes
@@ -348,4 +349,23 @@ it('can set onclick attributes', function () {
     });
 
     expect($example->getAttributes())->toBe('onclick="test()"');
+});
+
+// you can set multiple attributes and classes and when you cast to a string it will return the html
+it('can set multiple attributes and classes', function () {
+    $example = new VariantsManager;
+
+    $example->attributes()->set([
+        'id' => 'button',
+    ]);
+
+    $example->classes()->add('text-sm');
+
+    // expect($example->getAttributes())->toBe('class="text-sm" id="button"');
+
+    $example->classes()->add('text-lg');
+
+    // expect($example->getClasses())->toBe('text-lg');
+
+    expect((string) $example)->toBe('class="text-sm text-lg" id="button"');
 });

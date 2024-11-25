@@ -11,6 +11,8 @@ class ConstructsAttributes implements Htmlable
 {
     use Macroable;
 
+    protected $prefix = '';
+
     protected array $attributes = [];
 
     public function __construct(protected Variant $tailor) {}
@@ -30,28 +32,30 @@ class ConstructsAttributes implements Htmlable
             return (string) $this;
         }
 
-        $sanitizedKey = $this->sanitizeAttributeName($key);
+        $key = $this->getPrefixedAndSanitizedKey($key);
 
-        return $sanitizedKey.'="'.$this->attributes[$sanitizedKey].'"';
+        return $key . '="' . $this->attributes[$key] . '"';
     }
 
     public function set(string|array|Closure $keys, string|array|Closure|BackedEnum|null $values = null): static
     {
         $keys = $this->evaluate($keys);
+
         $values = $this->evaluate($values);
 
         if (is_array($keys)) {
             foreach ($keys as $key => $value) {
+                // prefix will be set in the set method when called recursively
                 $this->set($key, $value);
             }
 
             return $this;
         }
 
-        $sanitizedKey = $this->sanitizeAttributeName($keys);
+        $sanitizedKey = $this->getPrefixedAndSanitizedKey($keys);
 
         if (is_array($values)) {
-            $values = collect($values)->map(fn ($value) => $this->evaluate($value))->implode(' ');
+            $values = collect($values)->map(fn($value) => $this->evaluate($value))->implode(' ');
         }
 
         $this->attributes[$sanitizedKey] = $values;
@@ -72,13 +76,21 @@ class ConstructsAttributes implements Htmlable
         return $this;
     }
 
+    protected function getPrefixedAndSanitizedKey(string $key): string
+    {
+        $prefix = $this->prefix ? $this->prefix : '';
+
+        return preg_replace('/[^a-zA-Z0-9\-]/', '-', strtolower($prefix . $key));
+    }
+
     public function forget(?string $key = null): static
     {
         if ($key === null) {
             $this->attributes = [];
         } else {
-            $sanitizedKey = $this->sanitizeAttributeName($key);
-            unset($this->attributes[$sanitizedKey]);
+            $key = $this->getPrefixedAndSanitizedKey($key);
+
+            unset($this->attributes[$key]);
         }
 
         return $this;
@@ -89,8 +101,9 @@ class ConstructsAttributes implements Htmlable
         if ($key === null) {
             $this->attributes = [];
         } else {
-            $sanitizedKey = $this->sanitizeAttributeName($key);
-            $this->attributes[$sanitizedKey] = null;
+            $key = $this->getPrefixedAndSanitizedKey($key);
+
+            $this->attributes[$key] = null;
         }
 
         return $this;
@@ -98,9 +111,9 @@ class ConstructsAttributes implements Htmlable
 
     public function has(string $key): bool
     {
-        $sanitizedKey = $this->sanitizeAttributeName($key);
+        $key = $this->getPrefixedAndSanitizedKey($key);
 
-        return isset($this->attributes[$sanitizedKey]);
+        return isset($this->attributes[$key]);
     }
 
     public function if(bool|Closure $condition, string|array|Closure $attributes): static
@@ -148,11 +161,6 @@ class ConstructsAttributes implements Htmlable
         return $value;
     }
 
-    protected function sanitizeAttributeName(string $name): string
-    {
-        return preg_replace('/[^a-zA-Z0-9\-]/', '-', strtolower($name));
-    }
-
     public function toHtml(): string
     {
         return (string) $this;
@@ -161,8 +169,8 @@ class ConstructsAttributes implements Htmlable
     public function __toString()
     {
         return collect($this->attributes)
-            ->mapWithKeys(fn ($value, $key) => [trim($key) => trim($value)])
-            ->map(fn ($value, $key) => $key.'="'.$value.'"')
+            ->mapWithKeys(fn($value, $key) => [trim($key) => trim($value)])
+            ->map(fn($value, $key) => $key . '="' . $value . '"')
             ->values()
             ->implode(' ');
     }

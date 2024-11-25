@@ -124,7 +124,9 @@ class VariantsManager implements Htmlable
 
         $defaultAria = (string) $this->variants['default']->aria();
 
-        $default .= ' ' . $defaultAria;
+        $defaultClasses = (string) $this->variants['default']->classes();
+
+        $default .= ' ' . $defaultAria . ' ' . $defaultClasses;
 
         if ($this->selectedVariant === 'default') {
             $selected = '';
@@ -147,8 +149,23 @@ class VariantsManager implements Htmlable
 
     public function __toString()
     {
-        $this->attributes()->set('class', $this->getClasses());
+        // need to compile down all the attributes, classes, and aria attributes
+        $attributes = [];
 
-        return (string) $this->attributes();
+        foreach ($this->variants as $variant) {
+            $attributes[] = (string) $variant->attributes();
+            $attributes[] = (string) $variant->aria();
+            $attributes[] = (string) $variant->classes();
+        }
+
+        // now we need to add the classes from the default and selected variant
+
+
+        $attributes = trim(implode(' ', $attributes));
+
+        // remove any double spaces
+        $attributes = preg_replace('/\s+/', ' ', $attributes);
+
+        return $attributes;
     }
 }
