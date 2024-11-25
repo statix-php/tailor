@@ -1,0 +1,47 @@
+{
+    "name": "statix/tailor",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Statix\\Tailor\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests"
+        }
+    },
+    "authors": [
+        {
+            "name": "Wyatt Castaneda",
+            "email": "wyatt.castaneda@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "require": {
+        "spatie/laravel-package-tools": "^1.16"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Statix\\Tailor\\TailorServiceProvider"
+            ],
+            "aliases": {
+                "Tailor": "Statix\\Tailor\\Facades\\Tailor"
+            }
+        }
+    },
+    "require-dev": {
+        "pestphp/pest": "^3.5",
+        "orchestra/testbench": "^9.5",
+        "pestphp/pest-plugin-laravel": "^3.0",
+        "laravel/pint": "^1.18",
+        "gehrisandro/tailwind-merge-php": "^1.1"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
+}

@@ -1,0 +1,78 @@
+<?php
+
+namespace Statix\Tailor\Enums;
+
+enum AriaRole: string
+{
+    case ALERT = 'alert';
+    case ALERTDIALOG = 'alertdialog';
+    case APPLICATION = 'application';
+    case ARTICLE = 'article';
+    case BANNER = 'banner';
+    case BLOCKQUOTE = 'blockquote';
+    case BUTTON = 'button';
+    case CAPTION = 'caption';
+    case CELL = 'cell';
+    case CHECKBOX = 'checkbox';
+    case COLUMNHEADER = 'columnheader';
+    case COMBOBOX = 'combobox';
+    case COMPLEMENTARY = 'complementary';
+    case CONTENTINFO = 'contentinfo';
+    case DEFINITION = 'definition';
+    case DIALOG = 'dialog';
+    case DIRECTORY = 'directory';
+    case DOCUMENT = 'document';
+    case FEED = 'feed';
+    case FIGURE = 'figure';
+    case FORM = 'form';
+    case GRID = 'grid';
+    case GRIDCELL = 'gridcell';
+    case GROUP = 'group';
+    case HEADING = 'heading';
+    case IMG = 'img';
+    case LINK = 'link';
+    case LIST = 'list';
+    case LISTBOX = 'listbox';
+    case LISTITEM = 'listitem';
+    case LOG = 'log';
+    case MAIN = 'main';
+    case MARQUEE = 'marquee';
+    case MATH = 'math';
+    case MENU = 'menu';
+    case MENU_ITEM = 'menuitem';
+    case MENU_ITEM_CHECKBOX = 'menuitemcheckbox';
+    case MENU_ITEM_RADIO = 'menuitemradio';
+    case NAVIGATION = 'navigation';
+    case NONE = 'none';
+    case NOTE = 'note';
+    case OPTION = 'option';
+    case PRESENTATION = 'presentation';
+    case PROGRESSBAR = 'progressbar';
+    case RADIO = 'radio';
+    case RADIO_GROUP = 'radiogroup';
+    case REGION = 'region';
+    case ROW = 'row';
+    case ROWGROUP = 'rowgroup';
+    case ROWHEADER = 'rowheader';
+    case SCROLLBAR = 'scrollbar';
+    case SEARCH = 'search';
+    case SEARCHBOX = 'searchbox';
+    case SEPARATOR = 'separator';
+    case SLIDER = 'slider';
+    case SPINBUTTON = 'spinbutton';
+    case STATUS = 'status';
+    case SWITCH = 'switch';
+    case TAB = 'tab';
+    case TAB_LIST = 'tablist';
+    case TAB_PANEL = 'tabpanel';
+    case TABLE = 'table';
+    case TERM = 'term';
+    case TEXTBOX = 'textbox';
+    case TIME = 'time';
+    case TIMER = 'timer';
+    case TOOLBAR = 'toolbar';
+    case TOOLTIP = 'tooltip';
+    case TREE = 'tree';
+    case TREEGRID = 'treegrid';
+    case TREEITEM = 'treeitem';
+}
