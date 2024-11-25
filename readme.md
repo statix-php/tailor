@@ -1,3 +1,5 @@
+![Statix](./.art/banner.png)
+
 # _Tailor_ for Laravel Blade
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/statix/tailor.svg?style=flat-square)](https://packagist.org/packages/statix/tailor)
