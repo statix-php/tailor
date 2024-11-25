@@ -26,7 +26,7 @@ php artisan vendor:publish --tag=tailor-config
 ### Building a Component
 
 ```blade
-// view/components/button/index.blade.php
+// view/components/button.blade.php
 
 @props([
     'variant' => 'primary',
@@ -112,6 +112,10 @@ $c->setVariant($variant);
 
 // now when we output the component, the classes
 // and attributes will be applied, specific to the variant
+
+$c->attributes()
+    ->set('onclick', 'alert("Hello")')
+    ->set('onDblClick', '$wire.emit("dblClick")');
 @endphp
 
 <{{ $tag }} {{ $c }}>{{ $slot}}<{{ $tag }}>

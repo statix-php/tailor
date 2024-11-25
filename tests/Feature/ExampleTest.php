@@ -334,3 +334,18 @@ test('it has aria attributes support', function () {
 
     expect($t->getAttributes())->toBe('aria-label="test-label" aria-hidden="true" aria-label="test-label"');
 });
+
+// you can set onclick attributes
+it('can set onclick attributes', function () {
+    $example = new VariantsManager;
+
+    $example->attributes()->set('onclick', 'test()');
+
+    expect($example->getAttributes())->toBe('onclick="test()"');
+
+    $example->attributes()->set('onclick', function () {
+        return 'test()';
+    });
+
+    expect($example->getAttributes())->toBe('onclick="test()"');
+});
