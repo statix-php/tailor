@@ -4,7 +4,7 @@ namespace Statix\Tailor;
 
 class Tailor
 {
-    private static ?Tailor $instance = null;
+    protected static ?Tailor $instance = null;
 
     protected bool $usingTailwindMerge = false;
 
@@ -13,7 +13,7 @@ class Tailor
      *
      * @var VariantsManager[]
      */
-    private array $components = [];
+    protected array $components = [];
 
     public static function getInstance(): Tailor
     {
@@ -24,7 +24,7 @@ class Tailor
         return self::$instance;
     }
 
-    public function usingTailwindMerge(): bool
+    public function tailwindMergeEnabled(): bool
     {
         return $this->usingTailwindMerge;
     }
@@ -33,7 +33,7 @@ class Tailor
     {
         $this->usingTailwindMerge = $state;
 
-        if (!class_exists(\TailwindMerge\TailwindMerge::class)) {
+        if (! class_exists(\TailwindMerge\TailwindMerge::class)) {
             throw new \Exception(
                 'TailwindMerge is not installed. Please run `composer require gehrisandro/tailwind-merge-php`'
             );

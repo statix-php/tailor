@@ -3,7 +3,6 @@
 use Statix\Tailor\Tailor;
 use Statix\Tailor\Variant;
 use Statix\Tailor\VariantsManager;
-use TailwindMerge\TailwindMerge;
 
 it('can be created using the new keyword', function () {
     $example = new VariantsManager;
@@ -317,4 +316,21 @@ it('can use a variable in the match function', function () {
     ]);
 
     expect($example->getClasses())->toBe('w-32 h-32');
+});
+
+// it has aria attributes support
+test('it has aria attributes support', function () {
+    $t = Tailor::getInstance()->make('test.aria');
+
+    $t->aria()
+        ->set('label', 'test-label')
+        ->set('hidden', 'true');
+
+    $t->variant('primary')
+        ->aria()
+        ->set('label', 'test-label');
+
+    $t->setVariant('primary');
+
+    expect($t->getAttributes())->toBe('aria-label="test-label" aria-hidden="true" aria-label="test-label"');
 });

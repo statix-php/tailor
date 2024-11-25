@@ -14,6 +14,30 @@ class ConstructsAriaAttributes extends ConstructsAttributes
         return $this->set('role', $role);
     }
 
+    public function set(string|array|Closure $keys, string|array|Closure|BackedEnum|null $values = null): static
+    {
+        $keys = $this->evaluate($keys);
+        $values = $this->evaluate($values);
+
+        if (is_array($keys)) {
+            foreach ($keys as $key => $value) {
+                $this->set('aria-' . $key, $value);
+            }
+
+            return $this;
+        }
+
+        $sanitizedKey = $this->sanitizeAttributeName('aria-' . $keys);
+
+        if (is_array($values)) {
+            $values = collect($values)->map(fn($value) => $this->evaluate($value))->implode(' ');
+        }
+
+        $this->attributes[$sanitizedKey] = $values;
+
+        return $this;
+    }
+
     public function autocomplete(string|BackedEnum|Closure $autocomplete): self
     {
         $autocomplete = $this->evaluate($autocomplete);

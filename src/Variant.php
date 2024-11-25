@@ -6,20 +6,28 @@ class Variant
 {
     protected VariantsManager $variants;
 
-    protected ConstructsClasses $classes;
-
     protected ConstructsAttributes $attributes;
+
+    protected ConstructsAriaAttributes $aria;
+
+    protected ConstructsClasses $classes;
 
     public function __construct(protected string $name, VariantsManager $variants)
     {
         $this->variants = $variants;
-        $this->classes = new ConstructsClasses($this);
         $this->attributes = new ConstructsAttributes($this);
+        $this->aria = new ConstructsAriaAttributes($this);
+        $this->classes = new ConstructsClasses($this);
     }
 
     public function attributes(): ConstructsAttributes
     {
         return $this->attributes;
+    }
+
+    public function aria(): ConstructsAriaAttributes
+    {
+        return $this->aria;
     }
 
     public function classes(): ConstructsClasses
@@ -31,17 +39,4 @@ class Variant
     {
         return $this->variants->variant($name);
     }
-
-    // public function __call(string $method, array $arguments): static
-    // {
-    //     if (method_exists($this->classes, $method)) {
-    //         $this->classes->$method(...$arguments);
-    //     }
-
-    //     if (method_exists($this->attributes, $method)) {
-    //         $this->attributes->$method(...$arguments);
-    //     }
-
-    //     return $this;
-    // }
 }

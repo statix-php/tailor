@@ -27,7 +27,7 @@ class ConstructsClasses implements Htmlable
 
     public function __construct(protected Variant $tailor)
     {
-        $this->usingTailwindMerge = Tailor::getInstance()->usingTailwindMerge();
+        $this->usingTailwindMerge = Tailor::getInstance()->tailwindMergeEnabled();
 
         if ($this->usingTailwindMerge) {
             $this->twMerger = TailwindMerge::instance();
@@ -324,7 +324,7 @@ class ConstructsClasses implements Htmlable
         return $this;
     }
 
-    public function reset(string $key = null): static
+    public function reset(?string $key = null): static
     {
         if ($key === null) {
             $this->classes = [];
@@ -334,7 +334,6 @@ class ConstructsClasses implements Htmlable
 
         return $this;
     }
-
 
     /**
      * Parse the classes into a string. Handles closures, arrays,
@@ -375,7 +374,7 @@ class ConstructsClasses implements Htmlable
         $classes = trim($classes);
 
         // check if we are using tailwind merge
-        if (Tailor::getInstance()->usingTailwindMerge()) {
+        if ($this->usingTailwindMerge) {
             $this->classes[$key] = $this->twMerger->merge($this->classes[$key], $classes);
         } else {
             $this->classes[$key] .= ' ' . $classes;
@@ -438,7 +437,6 @@ class ConstructsClasses implements Htmlable
         $classes = $classes->filter(function ($value) {
             return ! empty($value);
         });
-
 
         $classes = trim($classes->implode(' '));
 

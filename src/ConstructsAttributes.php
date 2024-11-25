@@ -32,7 +32,7 @@ class ConstructsAttributes implements Htmlable
 
         $sanitizedKey = $this->sanitizeAttributeName($key);
 
-        return $sanitizedKey . '="' . $this->attributes[$sanitizedKey] . '"';
+        return $sanitizedKey.'="'.$this->attributes[$sanitizedKey].'"';
     }
 
     public function set(string|array|Closure $keys, string|array|Closure|BackedEnum|null $values = null): static
@@ -51,7 +51,7 @@ class ConstructsAttributes implements Htmlable
         $sanitizedKey = $this->sanitizeAttributeName($keys);
 
         if (is_array($values)) {
-            $values = collect($values)->map(fn($value) => $this->evaluate($value))->implode(' ');
+            $values = collect($values)->map(fn ($value) => $this->evaluate($value))->implode(' ');
         }
 
         $this->attributes[$sanitizedKey] = $values;
@@ -161,8 +161,8 @@ class ConstructsAttributes implements Htmlable
     public function __toString()
     {
         return collect($this->attributes)
-            ->mapWithKeys(fn($value, $key) => [trim($key) => trim($value)])
-            ->map(fn($value, $key) => $key . '="' . $value . '"')
+            ->mapWithKeys(fn ($value, $key) => [trim($key) => trim($value)])
+            ->map(fn ($value, $key) => $key.'="'.$value.'"')
             ->values()
             ->implode(' ');
     }

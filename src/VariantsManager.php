@@ -80,6 +80,14 @@ class VariantsManager implements Htmlable
     }
 
     /**
+     * Manage aria attributes for the default variant.
+     */
+    public function aria(): ConstructsAriaAttributes
+    {
+        return $this->variants['default']->aria();
+    }
+
+    /**
      * Set the selected variant by name in order to access its attributes and classes.
      */
     public function setVariant(string $name): static
@@ -114,19 +122,27 @@ class VariantsManager implements Htmlable
     {
         $default = (string) $this->variants['default']->attributes();
 
+        $defaultAria = (string) $this->variants['default']->aria();
+
+        $default .= ' ' . $defaultAria;
+
         if ($this->selectedVariant === 'default') {
             $selected = '';
         } else {
             $selected = (string) $this->variants[$this->selectedVariant]->attributes();
+
+            $aria = (string) $this->variants[$this->selectedVariant]->aria();
+
+            $selected .= ' ' . $aria;
         }
 
-        // merge the default and selected attributes together
-        return trim($default . ' ' . $selected);
+        // replace any double spaces with a single space
+        return preg_replace('/\s+/', ' ', trim($default . ' ' . $selected));
     }
 
     public function toHtml(): string
     {
-        return $this->__toString();
+        return (string) $this;
     }
 
     public function __toString()
