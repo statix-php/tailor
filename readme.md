@@ -1,4 +1,7 @@
-# Laravel Blade _Tailor_
+# _Tailor_ for Laravel Blade
+
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/statix/tailor.svg?style=flat-square)](https://packagist.org/packages/statix/tailor)
+[![Packagist Downloads](https://img.shields.io/packagist/dt/statix/tailor.svg?style=flat-square)](https://packagist.org/packages/statix/tailor)
 
 A _neat_ package to help build Blade component libraries.
 
@@ -9,6 +12,8 @@ composer require statix/tailor
 ```
 
 ## Configuration
+
+Publishing the configuration file is optional.
 
 ```bash
 php artisan vendor:publish --tag=tailor-config
@@ -40,13 +45,13 @@ $c->attributes()
     ])->if($tag !== 'button', function ($set) use ($type) {
         $set('type', $type);
         $set('aria-role', 'button');
-    })-if($tag === 'a', function ($set) {
+    })->if($tag === 'a', function ($set) {
         $set('aria-role', 'link');
     });
 
 // start building the variants
-$c->variant('primary);
-$c->variant('secondary);
+$c->variant('primary');
+$c->variant('secondary');
 
 // start building the classes common to all variants
 $c->classes()
