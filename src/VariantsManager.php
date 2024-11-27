@@ -116,6 +116,12 @@ class VariantsManager implements Htmlable
 
         // merge the default and selected classes together
         return trim($default . ' ' . $selected);
+
+        /**
+         * We need getClasses to output just the string of classes, not the class attribute because we need to be able to add
+         * the classes to the class attribute of the parent component. but when we cast the selected variant to a string we
+         * need to output the class attribute.
+         */
     }
 
     public function getAttributes()

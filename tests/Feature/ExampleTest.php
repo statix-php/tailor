@@ -368,4 +368,6 @@ it('can set multiple attributes and classes', function () {
     // expect($example->getClasses())->toBe('text-lg');
 
     expect((string) $example)->toBe('class="text-sm text-lg" id="button"');
+
+    // @todo: we need the gate
 });
