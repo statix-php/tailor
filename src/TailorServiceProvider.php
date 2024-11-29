@@ -11,8 +11,6 @@ class TailorServiceProvider extends PackageServiceProvider
     {
         $package
             ->name('tailor')
-            ->hasConfigFile()
-            ->hasViews('tailor')
-            ->hasViewComponents('tailor');
+            ->hasConfigFile();
     }
 }

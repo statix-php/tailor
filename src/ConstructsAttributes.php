@@ -26,17 +26,6 @@ class ConstructsAttributes implements Htmlable
         return $this->attributes[$key] ?? null;
     }
 
-    public function getFormatted(?string $key = null): string
-    {
-        if ($key === null) {
-            return (string) $this;
-        }
-
-        $key = $this->getPrefixedAndSanitizedKey($key);
-
-        return $key . '="' . $this->attributes[$key] . '"';
-    }
-
     public function set(string|array|Closure $keys, string|array|Closure|BackedEnum|null $values = null): static
     {
         $keys = $this->evaluate($keys);
@@ -45,7 +34,6 @@ class ConstructsAttributes implements Htmlable
 
         if (is_array($keys)) {
             foreach ($keys as $key => $value) {
-                // prefix will be set in the set method when called recursively
                 $this->set($key, $value);
             }
 
@@ -55,7 +43,7 @@ class ConstructsAttributes implements Htmlable
         $sanitizedKey = $this->getPrefixedAndSanitizedKey($keys);
 
         if (is_array($values)) {
-            $values = collect($values)->map(fn($value) => $this->evaluate($value))->implode(' ');
+            $values = collect($values)->map(fn ($value) => $this->evaluate($value))->implode(' ');
         }
 
         $this->attributes[$sanitizedKey] = $values;
@@ -80,7 +68,7 @@ class ConstructsAttributes implements Htmlable
     {
         $prefix = $this->prefix ? $this->prefix : '';
 
-        return preg_replace('/[^a-zA-Z0-9\-]/', '-', strtolower($prefix . $key));
+        return preg_replace('/[^a-zA-Z0-9\-]/', '-', strtolower($prefix.$key));
     }
 
     public function forget(?string $key = null): static
@@ -140,8 +128,6 @@ class ConstructsAttributes implements Htmlable
     {
         if ($value instanceof Closure) {
             return app()->call($value, [
-                'variant' => $this->tailor,
-                'attributes' => $this->attributes,
                 'set' => (function (string|array|Closure $keys, string|array|Closure|null $values = null) {
                     return $this->set($keys, $values);
                 })->bindTo($this),
@@ -169,8 +155,9 @@ class ConstructsAttributes implements Htmlable
     public function __toString()
     {
         return collect($this->attributes)
-            ->mapWithKeys(fn($value, $key) => [trim($key) => trim($value)])
-            ->map(fn($value, $key) => $key . '="' . $value . '"')
+            ->sortKeys()
+            ->mapWithKeys(fn ($value, $key) => [trim($key) => trim($value)])
+            ->map(fn ($value, $key) => $key.'="'.$value.'"')
             ->values()
             ->implode(' ');
     }

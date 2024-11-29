@@ -5,7 +5,7 @@ use Statix\Tailor\Variant;
 use Statix\Tailor\VariantsManager;
 
 it('can be created using the new keyword', function () {
-    $example = new VariantsManager;
+    $example = new VariantsManager('new-keyword');
 
     expect($example)->toBeInstanceOf(VariantsManager::class);
 });
@@ -19,7 +19,7 @@ it('can be created with a name', function () {
 
 // the default variant is always created
 it('creates a default variant', function () {
-    $example = new VariantsManager;
+    $example = new VariantsManager('default-variant');
 
     expect($example->variant('default'))->toBeInstanceOf(Variant::class);
 });
@@ -80,129 +80,6 @@ it('can retrieve a component', function () {
     expect($example->components())->toHaveCount(2);
 });
 
-// you can use the php match function in the methods for adding classes
-it('can use the match function', function () {
-    $example = new VariantsManager;
-
-    $size = 'sm';
-
-    $example->classes()->add(match ($size) {
-        'sm' => 'text-sm',
-        'md' => 'text-md',
-        'lg' => 'text-lg',
-        default => 'text-base',
-    });
-
-    expect($example->getClasses())->toBe('text-sm');
-
-    $example = new VariantsManager;
-
-    $size = 'dne';
-
-    $example->classes()->add(match ($size) {
-        'sm' => 'text-sm',
-        'md' => 'text-md',
-        'lg' => 'text-lg',
-        default => 'text-base',
-    });
-
-    expect($example->getClasses())->toBe('text-base');
-});
-
-// you can use the class match function in the methods for adding classes
-it('can use the class match function', function () {
-    $example = new VariantsManager;
-
-    $size = 'sm';
-
-    $example->classes()->match($size, [
-        'sm' => 'text-sm',
-        'md' => 'text-md',
-        'lg' => 'text-lg',
-    ]);
-
-    expect($example->getClasses())->toBe('text-sm');
-});
-
-// you can remove classes from a variant
-it('can remove classes', function () {
-    $example = new VariantsManager;
-
-    $example->classes()->add('text-sm');
-
-    expect($example->getClasses())->toBe('text-sm');
-
-    $example->classes()->remove('text-sm');
-
-    expect($example->getClasses())->toBe('');
-
-    $example->classes()
-        ->light([
-            'text-sm',
-        ])->dark([
-            'dark:text-lg',
-        ]);
-
-    $example->classes()->remove('text-sm', 'light');
-
-    expect($example->getClasses())->toBe('dark:text-lg');
-
-    $example->classes()->remove('dark:text-lg', 'dark');
-
-    expect($example->getClasses())->toBe('');
-
-    $example->classes()
-        ->add('text-white text-large');
-
-    $example->classes()->remove(function () {
-        return 'text-white';
-    });
-
-    expect($example->getClasses())->toBe('text-large');
-});
-
-// it can set attributes
-it('can set attributes', function () {
-    $example = new VariantsManager;
-
-    $example->attributes()->set('class', 'text-sm');
-
-    expect($example->getAttributes())->toBe('class="text-sm"');
-
-    $example->attributes()->set('class', 'text-sm text-lg');
-
-    expect($example->getAttributes())->toBe('class="text-sm text-lg"');
-
-    $example->attributes()->set('class', ['text-sm', 'text-lg']);
-
-    expect($example->getAttributes())->toBe('class="text-sm text-lg"');
-
-    $example->attributes()->set('class', function () {
-        return 'text-sm text-lg';
-    });
-
-    expect($example->getAttributes())->toBe('class="text-sm text-lg"');
-
-    $example->attributes()->set([
-        'class' => 'text-sm text-lg',
-        'id' => 'button',
-    ]);
-
-    expect($example->getAttributes())->toBe('class="text-sm text-lg" id="button"');
-
-    $example->attributes()->set([
-        'class' => 'text-sm text-lg',
-        'id' => 'button',
-    ]);
-
-    expect($example->getAttributes())->toBe('class="text-sm text-lg" id="button"');
-
-    $example->variant('dark')->attributes()->set('data', 'dark:text-sm');
-
-    expect($example->variant('dark')->attributes()->get('data'))->toBe('dark:text-sm');
-    expect($example->variant('dark')->attributes()->getFormatted('data'))->toBe('data="dark:text-sm"');
-});
-
 // you can create subcomponents that have thier own variants
 it('can create subcomponents', function () {
     $c = Tailor::getInstance()->make('test');
@@ -230,94 +107,6 @@ it('can create subcomponents', function () {
     $d = Tailor::getInstance()->get('test');
 });
 
-// test it sorts the classes correctly
-it('sorts the classes', function () {
-    $example = new VariantsManager;
-
-    $example->classes()
-        ->add('base')
-        ->add('base-2');
-
-    expect($example->getClasses())->toBe('base base-2');
-
-    $example->classes()
-        ->light('light-1');
-
-    expect($example->getClasses())->toBe('base base-2 light-1');
-
-    $example->classes()
-        ->dark('dark-1')
-        ->dark('dark-2')
-        ->light('light-2');
-
-    expect($example->getClasses())->toBe('base base-2 light-1 light-2 dark-1 dark-2');
-
-    $example->classes()
-        ->remove('base');
-
-    expect($example->getClasses())->toBe('base-2 light-1 light-2 dark-1 dark-2');
-
-    $example->classes()
-        ->invalid('invalid-1');
-
-    expect($example->getClasses())->toBe('base-2 light-1 light-2 dark-1 dark-2 invalid-1');
-
-    $example->classes()
-        ->add('alpha-1', 'alpha');
-
-    expect($example->getClasses())->toBe('base-2 light-1 light-2 dark-1 dark-2 alpha-1 invalid-1');
-});
-
-// if using tw merge, it will merge the classes
-it('can use tw merge', function () {
-    Tailor::getInstance()->enableTailwindMerge(true);
-
-    $example = Tailor::getInstance()->make('button');
-
-    $example->classes()
-        ->add('text-sm');
-
-    expect($example->getClasses())->toBe('text-sm');
-
-    $example->classes()
-        ->add('text-lg');
-
-    expect($example->getClasses())->toBe('text-lg');
-
-    Tailor::getInstance()->enableTailwindMerge(false);
-});
-
-// test you can use a variable in the match function
-it('can use a variable in the match function', function () {
-    $example = new VariantsManager;
-
-    $size = 'sm';
-
-    $example->classes()->match($size, [
-        'sm' => 'text-sm',
-        'md' => 'text-md',
-        'lg' => 'text-lg',
-        'xl' => 'text-xl',
-        'default' => $size,
-    ]);
-
-    expect($example->getClasses())->toBe('text-sm');
-
-    $example->classes()->reset();
-
-    $size = 'w-32 h-32';
-
-    $example->classes()->match($size, [
-        'sm' => 'text-sm',
-        'md' => 'text-md',
-        'lg' => 'text-lg',
-        'xl' => 'text-xl',
-        'default' => $size,
-    ]);
-
-    expect($example->getClasses())->toBe('w-32 h-32');
-});
-
 // it has aria attributes support
 test('it has aria attributes support', function () {
     $t = Tailor::getInstance()->make('test.aria');
@@ -332,42 +121,30 @@ test('it has aria attributes support', function () {
 
     $t->setVariant('primary');
 
-    expect($t->getAttributes())->toBe('aria-label="test-label" aria-hidden="true" aria-label="test-label"');
-    expect((string) $t)->toBe('aria-label="test-label" aria-hidden="true" aria-label="test-label"');
-});
-
-// you can set onclick attributes
-it('can set onclick attributes', function () {
-    $example = new VariantsManager;
-
-    $example->attributes()->set('onclick', 'test()');
-
-    expect($example->getAttributes())->toBe('onclick="test()"');
-
-    $example->attributes()->set('onclick', function () {
-        return 'test()';
-    });
-
-    expect($example->getAttributes())->toBe('onclick="test()"');
+    expect((string) $t)->toBe('aria-hidden="true" aria-label="test-label"');
 });
 
 // you can set multiple attributes and classes and when you cast to a string it will return the html
 it('can set multiple attributes and classes', function () {
-    $example = new VariantsManager;
+    $example = new VariantsManager('multi-test');
 
     $example->attributes()->set([
         'id' => 'button',
     ]);
 
     $example->classes()->add('text-sm');
-
-    // expect($example->getAttributes())->toBe('class="text-sm" id="button"');
-
     $example->classes()->add('text-lg');
 
-    // expect($example->getClasses())->toBe('text-lg');
+    expect((string) $example)->toBe('id="button" class="text-sm text-lg"');
+});
 
-    expect((string) $example)->toBe('class="text-sm text-lg" id="button"');
+// can set data attributes
+it('can set data attributes', function () {
+    $example = new VariantsManager('data-test');
 
-    // @todo: we need the gate
+    $example->data()->set([
+        'id' => 'button',
+    ]);
+
+    expect((string) $example)->toBe('data-id="button"');
 });

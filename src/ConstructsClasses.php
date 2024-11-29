@@ -7,6 +7,7 @@ use Closure;
 use Exception;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Traits\Macroable;
+use Statix\Tailor\Casters\ClassStringCaster;
 use TailwindMerge\TailwindMerge;
 
 class ConstructsClasses implements Htmlable
@@ -266,7 +267,7 @@ class ConstructsClasses implements Htmlable
             } elseif (is_string($value)) {
                 $this->appendToClassesKey($key, $this->parseClasses($value));
             } else {
-                throw new Exception('Invalid value type for key: ' . $key);
+                throw new Exception('Invalid value type for key: '.$key);
             }
 
             return $this;
@@ -288,7 +289,7 @@ class ConstructsClasses implements Htmlable
             } elseif (is_string($value)) {
                 $this->appendToClassesKey($key, $this->parseClasses($value));
             } else {
-                throw new Exception('Invalid value type for key: ' . $key);
+                throw new Exception('Invalid value type for key: '.$key);
             }
 
             return $this;
@@ -300,7 +301,7 @@ class ConstructsClasses implements Htmlable
         $classes = $this->parseClasses($classes);
 
         if (isset($this->classes[$key])) {
-            $result = trim(preg_replace('/\b' . preg_quote($classes, '/') . '\b(?=\s|$)/', '', $this->classes[$key]));
+            $result = trim(preg_replace('/\b'.preg_quote($classes, '/').'\b(?=\s|$)/', '', $this->classes[$key]));
 
             $this->classes[$key] = $result;
         }
@@ -377,7 +378,7 @@ class ConstructsClasses implements Htmlable
         if ($this->usingTailwindMerge) {
             $this->classes[$key] = $this->twMerger->merge($this->classes[$key], $classes);
         } else {
-            $this->classes[$key] .= ' ' . $classes;
+            $this->classes[$key] .= ' '.$classes;
         }
     }
 
@@ -397,6 +398,16 @@ class ConstructsClasses implements Htmlable
         return $value;
     }
 
+    public function get(?string $key = null): mixed
+    {
+        if ($key === null) {
+            /** @var array */
+            return $this->classes;
+        }
+
+        return $this->classes[$key] ?? null;
+    }
+
     public function toHtml(): string
     {
         return (string) $this;
@@ -404,6 +415,10 @@ class ConstructsClasses implements Htmlable
 
     public function __toString()
     {
+        $result = (new ClassStringCaster)->toString($this->classes);
+
+        return $result;
+
         // first sort the classes by key
         // the order should be base, light, dark
         // and then alphabetically for all other keys

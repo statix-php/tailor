@@ -2,6 +2,8 @@
 
 namespace Statix\Tailor;
 
+use Exception;
+
 class Tailor
 {
     protected static ?Tailor $instance = null;
@@ -33,8 +35,8 @@ class Tailor
     {
         $this->usingTailwindMerge = $state;
 
-        if (! class_exists(\TailwindMerge\TailwindMerge::class)) {
-            throw new \Exception(
+        if ($state === true && ! class_exists(\TailwindMerge\TailwindMerge::class)) {
+            throw new Exception(
                 'TailwindMerge is not installed. Please run `composer require gehrisandro/tailwind-merge-php`'
             );
         }
@@ -55,15 +57,9 @@ class Tailor
 
     public function get(string $name): VariantsManager
     {
-        /** @var VariantsManager */
-        $manager = $this->components[$name];
-
-        return $manager;
+        return $this->components[$name];
     }
 
-    /**
-     * Check if a component has been registered with Tailor.
-     */
     public function has(string $name): bool
     {
         return isset($this->components[$name]);

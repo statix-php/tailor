@@ -3,22 +3,23 @@
 namespace Statix\Tailor;
 
 use Illuminate\Contracts\Support\Htmlable;
+use TailwindMerge\TailwindMerge;
 
 class VariantsManager implements Htmlable
 {
     /**
      * @var Variant[]
      */
-    protected $variants = [];
+    protected array $variants = [];
 
     /**
      * @var VariantsManager[]
      */
-    protected $subComponents = [];
+    protected array $subComponents = [];
 
     protected string $selectedVariant = 'default';
 
-    public function __construct(public ?string $name = null)
+    public function __construct(public string $name)
     {
         $this->variant('default');
     }
@@ -28,7 +29,7 @@ class VariantsManager implements Htmlable
      */
     public function sub(string $name): static
     {
-        $comptName = $this->name . '.' . $name;
+        $comptName = $this->name.'.'.$name;
 
         if (! Tailor::getInstance()->has($comptName)) {
             Tailor::getInstance()->make($comptName);
@@ -55,36 +56,29 @@ class VariantsManager implements Htmlable
         return $this->variants[$name];
     }
 
-    /**
-     * Access the default variant.
-     */
     public function default(): Variant
     {
         return $this->variant('default');
     }
 
-    /**
-     * Manage attributes for the default variant.
-     */
     public function attributes(): ConstructsAttributes
     {
         return $this->variants['default']->attributes();
     }
 
-    /**
-     * Manage classes for the default variant.
-     */
-    public function classes(): ConstructsClasses
-    {
-        return $this->variants['default']->classes();
-    }
-
-    /**
-     * Manage aria attributes for the default variant.
-     */
     public function aria(): ConstructsAriaAttributes
     {
         return $this->variants['default']->aria();
+    }
+
+    public function data(): ConstructsDataAttributes
+    {
+        return $this->variants['default']->data();
+    }
+
+    public function classes(): ConstructsClasses
+    {
+        return $this->variants['default']->classes();
     }
 
     /**
@@ -101,53 +95,6 @@ class VariantsManager implements Htmlable
         return $this;
     }
 
-    /**
-     * Get the classes for the component
-     */
-    public function getClasses()
-    {
-        $default = (string) $this->variants['default']->classes();
-
-        if ($this->selectedVariant === 'default') {
-            $selected = '';
-        } else {
-            $selected = (string) $this->variants[$this->selectedVariant]->classes();
-        }
-
-        // merge the default and selected classes together
-        return trim($default . ' ' . $selected);
-
-        /**
-         * We need getClasses to output just the string of classes, not the class attribute because we need to be able to add
-         * the classes to the class attribute of the parent component. but when we cast the selected variant to a string we
-         * need to output the class attribute.
-         */
-    }
-
-    public function getAttributes()
-    {
-        $default = (string) $this->variants['default']->attributes();
-
-        $defaultAria = (string) $this->variants['default']->aria();
-
-        $defaultClasses = (string) $this->variants['default']->classes();
-
-        $default .= ' ' . $defaultAria . ' ' . $defaultClasses;
-
-        if ($this->selectedVariant === 'default') {
-            $selected = '';
-        } else {
-            $selected = (string) $this->variants[$this->selectedVariant]->attributes();
-
-            $aria = (string) $this->variants[$this->selectedVariant]->aria();
-
-            $selected .= ' ' . $aria;
-        }
-
-        // replace any double spaces with a single space
-        return preg_replace('/\s+/', ' ', trim($default . ' ' . $selected));
-    }
-
     public function toHtml(): string
     {
         return (string) $this;
@@ -156,20 +103,86 @@ class VariantsManager implements Htmlable
     public function __toString()
     {
         // need to compile down all the attributes, classes, and aria attributes
-        $attributes = [];
+        $attributes = [
+            'attributes' => [],
+            'aria' => [],
+            'data' => [],
+            'classes' => [],
+        ];
 
-        foreach ($this->variants as $variant) {
-            $attributes[] = (string) $variant->attributes();
-            $attributes[] = (string) $variant->aria();
-            $attributes[] = (string) $variant->classes();
+        // we need to add the default variant attributes, aria, and classes
+        $defaultVariantAttributes = $this->variants['default']->attributes()->get();
+        $defaultVariantAria = $this->variants['default']->aria()->get();
+        $defaultVariantData = $this->variants['default']->data()->get();
+        $defaultVariantClasses = $this->variants['default']->classes()->get();
+
+        // now we need to check if the selected variant is the default variant
+        // if not, we need to add the attributes, aria, and classes from the selected variant
+        if ($this->selectedVariant !== 'default') {
+            $selectedVariantAttributes = $this->variants[$this->selectedVariant]->attributes()->get();
+            $selectedVariantAria = $this->variants[$this->selectedVariant]->aria()->get();
+            $selectedVariantData = $this->variants[$this->selectedVariant]->data()->get();
+            $selectedVariantClasses = $this->variants[$this->selectedVariant]->classes()->get();
+
+            // now we need to smart merge the attributes, aria, and classes
+            // so that the selected variant attributes, aria, and classes override the default variant
+            $attributes['attributes'] = array_merge($defaultVariantAttributes, $selectedVariantAttributes);
+            $attributes['aria'] = array_merge($defaultVariantAria, $selectedVariantAria);
+            $attributes['data'] = array_merge($defaultVariantData, $selectedVariantData);
+        } else {
+            $selectedVariantClasses = [];
+
+            $attributes['attributes'] = $defaultVariantAttributes;
+            $attributes['aria'] = $defaultVariantAria;
+            $attributes['data'] = $defaultVariantData;
         }
 
-        // now we need to add the classes from the default and selected variant
+        // we need to merge the classes together,
+        // but we need to check if we are doing a tw-merge or a regular merge
+        if (Tailor::getInstance()->tailwindMergeEnabled()) {
+            $mergedVariantClasses = TailwindMerge::instance()->merge($defaultVariantClasses, $selectedVariantClasses);
+        } else {
+            $mergedVariantClasses = array_merge($defaultVariantClasses, $selectedVariantClasses);
+        }
 
+        $attributes['classes'] = $mergedVariantClasses;
 
-        $attributes = trim(implode(' ', $attributes));
+        // awesome, so now we have all the attributes, aria, and classes. We need to convert
+        // them to strings and then merge them together
+        $basicAttributes = collect($attributes['attributes'])
+            ->sortKeys()
+            ->mapWithKeys(fn ($value, $key) => [trim($key) => trim($value)])
+            ->map(fn ($value, $key) => $key.'="'.$value.'"')
+            ->values()
+            ->implode(' ');
 
-        // remove any double spaces
+        $ariaAttributes = collect($attributes['aria'])
+            ->sortKeys()
+            ->mapWithKeys(fn ($value, $key) => [trim($key) => trim($value)])
+            ->map(fn ($value, $key) => $key.'="'.$value.'"')
+            ->values()
+            ->implode(' ');
+
+        $dataAttributes = collect($attributes['data'])
+            ->sortKeys()
+            ->mapWithKeys(fn ($value, $key) => [trim($key) => trim($value)])
+            ->map(fn ($value, $key) => $key.'="'.$value.'"')
+            ->values()
+            ->implode(' ');
+
+        $classes = trim(collect($attributes['classes'])
+            ->map(fn ($value) => trim($value))
+            ->implode(' '));
+
+        if ($classes !== '') {
+            $classes = "class=\"$classes\"";
+        }
+
+        $attributes = trim(
+            $basicAttributes.' '.$ariaAttributes.' '.$dataAttributes.' '.$classes
+        );
+
+        // replace multiple spaces with a single space
         $attributes = preg_replace('/\s+/', ' ', $attributes);
 
         return $attributes;

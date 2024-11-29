@@ -4,19 +4,19 @@ namespace Statix\Tailor;
 
 class Variant
 {
-    protected VariantsManager $variants;
-
     protected ConstructsAttributes $attributes;
 
     protected ConstructsAriaAttributes $aria;
 
+    protected ConstructsDataAttributes $data;
+
     protected ConstructsClasses $classes;
 
-    public function __construct(protected string $name, VariantsManager $variants)
+    public function __construct(protected string $name, protected VariantsManager $variants)
     {
-        $this->variants = $variants;
         $this->attributes = new ConstructsAttributes($this);
         $this->aria = new ConstructsAriaAttributes($this);
+        $this->data = new ConstructsDataAttributes($this);
         $this->classes = new ConstructsClasses($this);
     }
 
@@ -35,8 +35,8 @@ class Variant
         return $this->classes;
     }
 
-    public function variant(string $name): static
+    public function data(): ConstructsDataAttributes
     {
-        return $this->variants->variant($name);
+        return $this->data;
     }
 }
