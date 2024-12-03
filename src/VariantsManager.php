@@ -142,7 +142,16 @@ class VariantsManager implements Htmlable
         if (Tailor::getInstance()->tailwindMergeEnabled()) {
             $mergedVariantClasses = TailwindMerge::instance()->merge($defaultVariantClasses, $selectedVariantClasses);
         } else {
-            $mergedVariantClasses = array_merge($defaultVariantClasses, $selectedVariantClasses);
+            // so we want to merge the default variant classes with the selected variant classes
+            // but we dont want to override entire key values, we want to merge them together
+            $mergedVariantClasses = array_merge_recursive($defaultVariantClasses, $selectedVariantClasses);
+
+            // we need to flatten the array so that we dont have nested arrays
+            $mergedVariantClasses = collect($mergedVariantClasses)
+                ->flatten()
+                ->unique()
+                ->values()
+                ->implode('');
         }
 
         $attributes['classes'] = $mergedVariantClasses;
