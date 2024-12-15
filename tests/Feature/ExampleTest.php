@@ -148,3 +148,14 @@ it('can set data attributes', function () {
 
     expect((string) $example)->toBe('data-id="button"');
 });
+
+// it does not break when setting attributes with colons in the key
+it('does not break when setting attributes with colons in the key', function () {
+    $example = new VariantsManager('colon-test');
+
+    $example->attributes()->set([
+        'wire:click' => 'action',
+    ]);
+
+    expect((string) $example)->toBe('wire:click="action"');
+});

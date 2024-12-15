@@ -68,7 +68,7 @@ class ConstructsAttributes implements Htmlable
     {
         $prefix = $this->prefix ? $this->prefix : '';
 
-        return preg_replace('/[^a-zA-Z0-9\-]/', '-', strtolower($prefix.$key));
+        return strtolower($prefix.$key);
     }
 
     public function forget(?string $key = null): static

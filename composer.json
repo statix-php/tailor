@@ -17,6 +17,9 @@
             "email": "wyatt.castaneda@gmail.com"
         }
     ],
+    "scripts": {
+        "test": "@php ./vendor/bin/pest"
+    },
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
