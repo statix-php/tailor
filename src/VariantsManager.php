@@ -92,6 +92,11 @@ class VariantsManager implements Htmlable
 
         $this->selectedVariant = $name;
 
+        // need to set the variant on all the sub-components
+        foreach ($this->subComponents as $subComponent) {
+            $subComponent->setVariant($name);
+        }
+
         return $this;
     }
 
