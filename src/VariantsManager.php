@@ -61,6 +61,11 @@ class VariantsManager implements Htmlable
         return $this->variant('default');
     }
 
+    public function hasVariant(string $name): bool
+    {
+        return isset($this->variants[$name]);
+    }
+
     public function attributes(): ConstructsAttributes
     {
         return $this->variants['default']->attributes();

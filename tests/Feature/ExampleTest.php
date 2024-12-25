@@ -159,3 +159,18 @@ it('does not break when setting attributes with colons in the key', function () 
 
     expect((string) $example)->toBe('wire:click="action"');
 });
+
+// it has a new api for setting classes across variants
+it('can set classes across variants', function () {
+    $example = new VariantsManager('class-test');
+
+    $example->classes()->variants([
+        'default' => 'text-sm',
+        'primary' => 'text-sm',
+        'secondary' => 'text-lg',
+        'custom' => 'text-xl',
+    ]);
+
+    expect($example->hasVariant('primary'))->toBeTrue();
+    expect($example->hasVariant('custom'))->toBeTrue();
+});

@@ -35,6 +35,24 @@ class ConstructsClasses implements Htmlable
         }
     }
 
+    public function variant(string $name): Variant
+    {
+        return $this->tailor->variants->variant($name);
+    }
+
+    public function variants(array $classes, ?string $key = null): static
+    {
+        foreach ($classes as $variant => $classes) {
+            if ($key) {
+                $this->variant($variant)->classes()->add($classes, $key);
+            } else {
+                $this->variant($variant)->classes()->base($classes);
+            }
+        }
+
+        return $this;
+    }
+
     public function base(string|array|Closure $classes): static
     {
         $this->state('base', $classes);
@@ -225,6 +243,20 @@ class ConstructsClasses implements Htmlable
     }
 
     public function print(string|array|Closure $classes): static
+    {
+        $this->state('print', $classes);
+
+        return $this;
+    }
+
+    public function printLight(string|array|Closure $classes): static
+    {
+        $this->state('print', $classes);
+
+        return $this;
+    }
+
+    public function printDark(string|array|Closure $classes): static
     {
         $this->state('print', $classes);
 
