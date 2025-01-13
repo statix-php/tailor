@@ -28,7 +28,7 @@ class ConstructsAttributes implements Htmlable
     }
 
     public function set(
-        string|array|ComponentAttributeBag $keys, 
+        string|array|ComponentAttributeBag $keys,
         string|array|Closure|BackedEnum|null $values = null): static
     {
         $keys = $this->evaluate($keys);
@@ -116,8 +116,8 @@ class ConstructsAttributes implements Htmlable
     }
 
     public function if(mixed $state, mixed $case, Closure $then, ?Closure $else = null): static
-    {        
-        if($state === $case) {
+    {
+        if ($state === $case) {
             app()->call($then, $this->getInjectables());
         } else {
             if ($else) {
@@ -130,8 +130,7 @@ class ConstructsAttributes implements Htmlable
 
     protected function evaluate(
         string|array|ComponentAttributeBag|Closure|BackedEnum|null $value
-    ): mixed
-    {
+    ): mixed {
         if ($value instanceof ComponentAttributeBag) {
             return $value->getAttributes();
         }
@@ -147,7 +146,7 @@ class ConstructsAttributes implements Htmlable
         return $value;
     }
 
-    protected function getInjectables(): array 
+    protected function getInjectables(): array
     {
         return [
             'set' => Closure::fromCallable([$this, 'set'])->bindTo($this),

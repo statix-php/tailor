@@ -96,7 +96,7 @@ class VariantsManager implements Htmlable
         return isset($this->variants[$name]);
     }
 
-    /** 
+    /**
      * Get the attributes builder for the default variant.
      */
     public function attributes(): ConstructsAttributes
