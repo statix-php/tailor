@@ -1,5 +1,6 @@
 <?php
 
+use Statix\Tailor\Facades\Tailor as FacadesTailor;
 use Statix\Tailor\Tailor;
 use Statix\Tailor\Variant;
 use Statix\Tailor\VariantsManager;
@@ -173,4 +174,29 @@ it('can set classes across variants', function () {
 
     expect($example->hasVariant('primary'))->toBeTrue();
     expect($example->hasVariant('custom'))->toBeTrue();
+});
+
+// it passes a failing case from real world usage
+it('passes a failing case from real world usage', function () {
+    $example = FacadesTailor::make('button');
+
+    $attributes = [
+        'id' => 'button',
+        'href' => 'https://example.com',
+    ];
+
+    $as = 'a';
+    $type = 'button';
+
+    $example->attributes()
+        ->set([
+            'data-variant' => 'primary',
+            'data-size' => 'sm',
+        ])
+        ->merge($attributes)
+        ->if($as == 'button', function ($set) use ($type) {
+            $set('type', $type);
+        });
+
+    expect((string) $example)->toBe('data-size="sm" data-variant="primary" href="https://example.com" id="button"');
 });

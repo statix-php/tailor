@@ -8,40 +8,65 @@ use TailwindMerge\TailwindMerge;
 class VariantsManager implements Htmlable
 {
     /**
+     * The component variants.
+     *
      * @var Variant[]
      */
     protected array $variants = [];
 
     /**
+     * The component sub-components.
+     *
      * @var VariantsManager[]
      */
     protected array $subComponents = [];
 
+    /**
+     * The selected variant.
+     *
+     * Used to output the correct attributes and classes.
+     */
     protected string $selectedVariant = 'default';
 
     public function __construct(public string $name)
     {
+        // Ensure that the default variant is always created
         $this->variant('default');
     }
 
     /**
      * Create or retrieve a sub-component by name.
+     *
+     * Sub-components are components that are nested within the main component.
+     * For example, a button component may have a sub-component for the icon.
+     *
+     * The sub-component name should be unique in the context of the main component.
+     *
+     * The name will be prefixed with the main component name. For example, if the
+     * main component is a button and the sub-component is an icon, the sub-component
+     * name will be button.icon.
+     *
+     * @return VariantsManager
      */
     public function sub(string $name): static
     {
         $comptName = $this->name.'.'.$name;
 
-        if (! Tailor::getInstance()->has($comptName)) {
-            Tailor::getInstance()->make($comptName);
-        }
-
-        $comp = Tailor::getInstance()->get($comptName);
+        $comp = new VariantsManager($comptName);
 
         if (! isset($this->subComponents[$comptName])) {
             $this->subComponents[$comptName] = $comp;
         }
 
         return $this->subComponents[$comptName];
+    }
+
+    /**
+     * @see VariantsManager::sub()
+     */
+    public function child(string $name): static
+    {
+        return $this->sub($name);
     }
 
     /**
@@ -110,100 +135,86 @@ class VariantsManager implements Htmlable
         return (string) $this;
     }
 
+    /**
+     * Convert the manager to its string representation.
+     */
     public function __toString()
     {
-        // need to compile down all the attributes, classes, and aria attributes
+        $attributes = $this->compileAttributes();
+
+        return $this->formatAttributes($attributes);
+    }
+
+    /**
+     * Compile all attributes from default and selected variants.
+     */
+    protected function compileAttributes(): array
+    {
+        $defaultVariant = $this->variants['default'];
+        $selectedVariant = $this->variants[$this->selectedVariant];
+
         $attributes = [
-            'attributes' => [],
-            'aria' => [],
-            'data' => [],
-            'classes' => [],
+            'attributes' => $defaultVariant->attributes()->get(),
+            'aria' => $defaultVariant->aria()->get(),
+            'data' => $defaultVariant->data()->get(),
+            'classes' => $defaultVariant->classes()->get(),
         ];
 
-        // we need to add the default variant attributes, aria, and classes
-        $defaultVariantAttributes = $this->variants['default']->attributes()->get();
-        $defaultVariantAria = $this->variants['default']->aria()->get();
-        $defaultVariantData = $this->variants['default']->data()->get();
-        $defaultVariantClasses = $this->variants['default']->classes()->get();
-
-        // now we need to check if the selected variant is the default variant
-        // if not, we need to add the attributes, aria, and classes from the selected variant
+        // Merge selected variant attributes if not default
         if ($this->selectedVariant !== 'default') {
-            $selectedVariantAttributes = $this->variants[$this->selectedVariant]->attributes()->get();
-            $selectedVariantAria = $this->variants[$this->selectedVariant]->aria()->get();
-            $selectedVariantData = $this->variants[$this->selectedVariant]->data()->get();
-            $selectedVariantClasses = $this->variants[$this->selectedVariant]->classes()->get();
-
-            // now we need to smart merge the attributes, aria, and classes
-            // so that the selected variant attributes, aria, and classes override the default variant
-            $attributes['attributes'] = array_merge($defaultVariantAttributes, $selectedVariantAttributes);
-            $attributes['aria'] = array_merge($defaultVariantAria, $selectedVariantAria);
-            $attributes['data'] = array_merge($defaultVariantData, $selectedVariantData);
-        } else {
-            $selectedVariantClasses = [];
-
-            $attributes['attributes'] = $defaultVariantAttributes;
-            $attributes['aria'] = $defaultVariantAria;
-            $attributes['data'] = $defaultVariantData;
+            $attributes['attributes'] = array_merge($attributes['attributes'], $selectedVariant->attributes()->get());
+            $attributes['aria'] = array_merge($attributes['aria'], $selectedVariant->aria()->get());
+            $attributes['data'] = array_merge($attributes['data'], $selectedVariant->data()->get());
+            $attributes['classes'] = $this->mergeClasses(
+                $attributes['classes'],
+                $selectedVariant->classes()->get()
+            );
         }
-
-        // we need to merge the classes together,
-        // but we need to check if we are doing a tw-merge or a regular merge
-        if (Tailor::getInstance()->tailwindMergeEnabled()) {
-            $mergedVariantClasses = TailwindMerge::instance()->merge($defaultVariantClasses, $selectedVariantClasses);
-        } else {
-            // so we want to merge the default variant classes with the selected variant classes
-            // but we dont want to override entire key values, we want to merge them together
-            $mergedVariantClasses = array_merge_recursive($defaultVariantClasses, $selectedVariantClasses);
-
-            // we need to flatten the array so that we dont have nested arrays
-            $mergedVariantClasses = collect($mergedVariantClasses)
-                ->flatten()
-                ->unique()
-                ->values()
-                ->implode('');
-        }
-
-        $attributes['classes'] = $mergedVariantClasses;
-
-        // awesome, so now we have all the attributes, aria, and classes. We need to convert
-        // them to strings and then merge them together
-        $basicAttributes = collect($attributes['attributes'])
-            ->sortKeys()
-            ->mapWithKeys(fn ($value, $key) => [trim($key) => trim($value)])
-            ->map(fn ($value, $key) => $key.'="'.$value.'"')
-            ->values()
-            ->implode(' ');
-
-        $ariaAttributes = collect($attributes['aria'])
-            ->sortKeys()
-            ->mapWithKeys(fn ($value, $key) => [trim($key) => trim($value)])
-            ->map(fn ($value, $key) => $key.'="'.$value.'"')
-            ->values()
-            ->implode(' ');
-
-        $dataAttributes = collect($attributes['data'])
-            ->sortKeys()
-            ->mapWithKeys(fn ($value, $key) => [trim($key) => trim($value)])
-            ->map(fn ($value, $key) => $key.'="'.$value.'"')
-            ->values()
-            ->implode(' ');
-
-        $classes = trim(collect($attributes['classes'])
-            ->map(fn ($value) => trim($value))
-            ->implode(' '));
-
-        if ($classes !== '') {
-            $classes = "class=\"$classes\"";
-        }
-
-        $attributes = trim(
-            $basicAttributes.' '.$ariaAttributes.' '.$dataAttributes.' '.$classes
-        );
-
-        // replace multiple spaces with a single space
-        $attributes = preg_replace('/\s+/', ' ', $attributes);
 
         return $attributes;
+    }
+
+    /**
+     * Merge class lists using appropriate strategy.
+     */
+    protected function mergeClasses(array $defaultClasses, array $selectedClasses): string
+    {
+        if (Tailor::getInstance()->isTailwindMergeEnabled()) {
+            return TailwindMerge::instance()->merge($defaultClasses, $selectedClasses);
+        }
+
+        return collect(array_merge_recursive($defaultClasses, $selectedClasses))
+            ->flatten()
+            ->unique()
+            ->values()
+            ->implode(' ');
+    }
+
+    /**
+     * Format compiled attributes into HTML string.
+     */
+    protected function formatAttributes(array $attributes): string
+    {
+        $formatGroup = function (array $group) {
+            return collect($group)
+                ->sortKeys()
+                ->mapWithKeys(fn ($value, $key) => [trim($key) => trim($value)])
+                ->map(fn ($value, $key) => $key.'="'.$value.'"')
+                ->values()
+                ->implode(' ');
+        };
+
+        $parts = [
+            $formatGroup($attributes['attributes']),
+            $formatGroup($attributes['aria']),
+            $formatGroup($attributes['data']),
+        ];
+
+        $classes = trim(collect($attributes['classes'])->implode(' '));
+        if ($classes !== '') {
+            $parts[] = sprintf('class="%s"', $classes);
+        }
+
+        return preg_replace('/\s+/', ' ', trim(implode(' ', array_filter($parts))));
     }
 }

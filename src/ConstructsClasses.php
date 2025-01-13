@@ -28,7 +28,7 @@ class ConstructsClasses implements Htmlable
 
     public function __construct(protected Variant $tailor)
     {
-        $this->usingTailwindMerge = Tailor::getInstance()->tailwindMergeEnabled();
+        $this->usingTailwindMerge = Tailor::getInstance()->isTailwindMergeEnabled();
 
         if ($this->usingTailwindMerge) {
             $this->twMerger = TailwindMerge::instance();
