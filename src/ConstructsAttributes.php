@@ -27,7 +27,9 @@ class ConstructsAttributes implements Htmlable
         return $this->attributes[$key] ?? null;
     }
 
-    public function set(string|array|ComponentAttributeBag|Closure $keys, string|array|Closure|BackedEnum|null $values = null): static
+    public function set(
+        string|array|ComponentAttributeBag $keys, 
+        string|array|Closure|BackedEnum|null $values = null): static
     {
         $keys = $this->evaluate($keys);
 
@@ -44,7 +46,15 @@ class ConstructsAttributes implements Htmlable
         $sanitizedKey = $this->getPrefixedAndSanitizedKey($keys);
 
         if (is_array($values)) {
-            $values = collect($values)->map(fn ($value) => $this->evaluate($value))->implode(' ');
+            // we will map through the values and evaluate them
+            // and only if the values are truthy, we will implode them
+            // this is useful for setting multiple classes conditionally
+            // for example, if we have ['bg-red-500' => true, 'text-white' => false, 'font-bold' => true]
+            // we will evaluate each value and only implode the truthy values
+            // which will result in 'bg-red-500 font-bold'
+            $values = collect($values)->filter(function ($value) {
+                return (bool) $value;
+            })->keys()->implode(' ');
         }
 
         $this->attributes[$sanitizedKey] = $values;
@@ -52,7 +62,7 @@ class ConstructsAttributes implements Htmlable
         return $this;
     }
 
-    public function merge(array|ComponentAttributeBag|Closure $values): static
+    public function merge(array|ComponentAttributeBag $values): static
     {
         $values = $this->evaluate($values);
 
@@ -105,40 +115,29 @@ class ConstructsAttributes implements Htmlable
         return isset($this->attributes[$key]);
     }
 
-    public function if(bool|Closure $condition, string|array|Closure $attributes): static
-    {
-        if ($condition instanceof Closure) {
-            $condition = app()->call($condition, [
-                'variant' => $this->tailor,
-                'attributes' => $this,
-            ]);
-        }
-
-        if ($condition) {
-            $attributes = $this->evaluate($attributes);
-
-            if (! is_null($attributes)) {
-                $this->set($attributes);
+    public function if(mixed $state, mixed $case, Closure $then, ?Closure $else = null): static
+    {        
+        if($state === $case) {
+            app()->call($then, $this->getInjectables());
+        } else {
+            if ($else) {
+                app()->call($else, $this->getInjectables());
             }
         }
 
         return $this;
     }
 
-    protected function evaluate(string|array|Closure|BackedEnum|null $value): mixed
+    protected function evaluate(
+        string|array|ComponentAttributeBag|Closure|BackedEnum|null $value
+    ): mixed
     {
+        if ($value instanceof ComponentAttributeBag) {
+            return $value->getAttributes();
+        }
+
         if ($value instanceof Closure) {
-            return app()->call($value, [
-                'set' => (function (string|array|Closure $keys, string|array|Closure|null $values = null) {
-                    return $this->set($keys, $values);
-                })->bindTo($this),
-                'get' => (function (?string $key = null) {
-                    return $this->get($key);
-                })->bindTo($this),
-                'has' => (function (string $key) {
-                    return $this->has($key);
-                })->bindTo($this),
-            ]);
+            return app()->call($value, $this->getInjectables());
         }
 
         if ($value instanceof BackedEnum) {
@@ -146,6 +145,15 @@ class ConstructsAttributes implements Htmlable
         }
 
         return $value;
+    }
+
+    protected function getInjectables(): array 
+    {
+        return [
+            'set' => Closure::fromCallable([$this, 'set'])->bindTo($this),
+            'get' => Closure::fromCallable([$this, 'get'])->bindTo($this),
+            'has' => Closure::fromCallable([$this, 'has'])->bindTo($this),
+        ];
     }
 
     public function toHtml(): string

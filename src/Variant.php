@@ -12,7 +12,7 @@ class Variant
 
     protected ConstructsClasses $classes;
 
-    public function __construct(public string $name, public VariantsManager $variants)
+    public function __construct(public string $name, public VariantsManager $manager)
     {
         $this->attributes = new ConstructsAttributes($this);
         $this->aria = new ConstructsAriaAttributes($this);

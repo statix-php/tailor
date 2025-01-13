@@ -28,7 +28,7 @@ class VariantsManager implements Htmlable
      */
     protected string $selectedVariant = 'default';
 
-    public function __construct(public string $name)
+    public function __construct(public string $name, public ?VariantsManager $parent = null)
     {
         // Ensure that the default variant is always created
         $this->variant('default');
@@ -69,6 +69,11 @@ class VariantsManager implements Htmlable
         return $this->sub($name);
     }
 
+    public function parent(): ?VariantsManager
+    {
+        return $this->parent;
+    }
+
     /**
      * Create or retrieve a variant by name.
      */
@@ -91,21 +96,33 @@ class VariantsManager implements Htmlable
         return isset($this->variants[$name]);
     }
 
+    /** 
+     * Get the attributes builder for the default variant.
+     */
     public function attributes(): ConstructsAttributes
     {
         return $this->variants['default']->attributes();
     }
 
+    /**
+     * Get the aria attributes builder for the default variant.
+     */
     public function aria(): ConstructsAriaAttributes
     {
         return $this->variants['default']->aria();
     }
 
+    /**
+     * Get the data attributes builder for the default variant.
+     */
     public function data(): ConstructsDataAttributes
     {
         return $this->variants['default']->data();
     }
 
+    /**
+     * Get the classes builder for the default variant.
+     */
     public function classes(): ConstructsClasses
     {
         return $this->variants['default']->classes();

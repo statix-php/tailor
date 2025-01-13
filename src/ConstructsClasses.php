@@ -37,7 +37,7 @@ class ConstructsClasses implements Htmlable
 
     public function variant(string $name): Variant
     {
-        return $this->tailor->variants->variant($name);
+        return $this->tailor->manager->variant($name);
     }
 
     public function variants(array $classes, ?string $key = null): static

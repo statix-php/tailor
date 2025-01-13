@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\View\ComponentAttributeBag;
 use Statix\Tailor\Facades\Tailor as FacadesTailor;
 use Statix\Tailor\Tailor;
 use Statix\Tailor\Variant;
@@ -194,9 +195,20 @@ it('passes a failing case from real world usage', function () {
             'data-size' => 'sm',
         ])
         ->merge($attributes)
-        ->if($as == 'button', function ($set) use ($type) {
+        ->if($as, 'button', function ($set) use ($type) {
             $set('type', $type);
         });
 
     expect((string) $example)->toBe('data-size="sm" data-variant="primary" href="https://example.com" id="button"');
+
+    $bag = new ComponentAttributeBag([
+        'href' => 'https://example.com',
+    ]);
+
+    $c = FacadesTailor::make('c');
+
+    $c->attributes()
+        ->merge($bag->except('class'));
+
+    expect((string) $c)->toBe('href="https://example.com"');
 });
