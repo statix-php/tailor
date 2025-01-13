@@ -8,15 +8,6 @@ class Tailor
 {
     protected static ?Tailor $instance = null;
 
-    protected bool $usingTailwindMerge = false;
-
-    /**
-     * The components that have been registered with the Tailor.
-     *
-     * @var VariantsManager[]
-     */
-    protected array $components = [];
-
     public static function getInstance(): Tailor
     {
         if (self::$instance === null) {
@@ -26,22 +17,21 @@ class Tailor
         return self::$instance;
     }
 
-    public function tailwindMergeEnabled(): bool
+    /**
+     * The components that have been registered with Tailor.
+     *
+     * @var VariantsManager[]
+     */
+    protected array $components = [];
+
+    /**
+     * Get all components that been registered with Tailor.
+     *
+     * @return VariantsManager[]
+     */
+    public function components(): array
     {
-        return $this->usingTailwindMerge;
-    }
-
-    public function enableTailwindMerge(bool $state = true): static
-    {
-        $this->usingTailwindMerge = $state;
-
-        if ($state === true && ! class_exists(\TailwindMerge\TailwindMerge::class)) {
-            throw new Exception(
-                'TailwindMerge is not installed. Please run `composer require gehrisandro/tailwind-merge-php`'
-            );
-        }
-
-        return $this;
+        return $this->components;
     }
 
     public function make(string $name, bool $overide = true): VariantsManager
@@ -66,12 +56,30 @@ class Tailor
     }
 
     /**
-     * Get all components that been registered with Tailor.
-     *
-     * @return VariantsManager[]
+     * Determine if TailwindMerge is enabled.
      */
-    public function components(): array
+    protected bool $usingTailwindMerge = false;
+
+    public function isTailwindMergeEnabled(): bool
     {
-        return $this->components;
+        return $this->usingTailwindMerge;
+    }
+
+    public function enableTailwindMerge(bool $state = true): static
+    {
+        $this->usingTailwindMerge = $state;
+
+        if ($state === true && ! class_exists(\TailwindMerge\TailwindMerge::class)) {
+            throw new Exception(
+                'TailwindMerge is not installed. Please run `composer require gehrisandro/tailwind-merge-php`'
+            );
+        }
+
+        return $this;
+    }
+
+    public function disableTailwindMerge(): static
+    {
+        return $this->enableTailwindMerge(false);
     }
 }
