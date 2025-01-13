@@ -6,6 +6,7 @@ use BackedEnum;
 use Closure;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Traits\Macroable;
+use Illuminate\View\ComponentAttributeBag;
 
 class ConstructsAttributes implements Htmlable
 {
@@ -26,7 +27,7 @@ class ConstructsAttributes implements Htmlable
         return $this->attributes[$key] ?? null;
     }
 
-    public function set(string|array|Closure $keys, string|array|Closure|BackedEnum|null $values = null): static
+    public function set(string|array|ComponentAttributeBag|Closure $keys, string|array|Closure|BackedEnum|null $values = null): static
     {
         $keys = $this->evaluate($keys);
 
@@ -51,7 +52,7 @@ class ConstructsAttributes implements Htmlable
         return $this;
     }
 
-    public function merge(string|array|Closure $values): static
+    public function merge(array|ComponentAttributeBag|Closure $values): static
     {
         $values = $this->evaluate($values);
 
